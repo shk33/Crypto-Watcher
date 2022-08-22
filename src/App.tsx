@@ -1,14 +1,10 @@
 import React from "react";
-import { DragDropContext, Droppable } from "react-beautiful-dnd";
 import { Coin } from "./entities/Coin"
-import CoinCard from "components/CoinCard";
+import { BoardsIds } from "./entities/CoinBoard"
+import { insertIntoArrayByIndex } from "helpers/Commons";
+import BoardList from "components/BoardList";
 
 const grid = 8;
-
-enum BoardsIds {
-  POSSIBLE_COINS = "possibleCoins",
-  WATCH_LIST = "watchList",
-}
  
 function App() {
   const [coins, setCoins] = React.useState<Coin[]>([]);
@@ -30,15 +26,6 @@ function App() {
   React.useEffect(() => {
     setUnwatchedCoins(coins);
   }, [coins]);
-
-  const insert = (arr:Array<any>, index: number, newItem:any) => [
-    // part of the array before the specified index
-    ...arr.slice(0, index),
-    // inserted item
-    newItem,
-    // part of the array after the specified index
-    ...arr.slice(index)
-  ];
 
   const getCoinsByBoardId = (board: BoardsIds) => {
     switch (board) {
@@ -62,7 +49,7 @@ function App() {
     }
   }
 
-   const onDragEnd = (result:any) => {
+  const handleMoveCoinToList = (result: any) => {
     if (!result.destination) {
       return;
     }
@@ -78,13 +65,12 @@ function App() {
 
     if(movedCoin){
       const newSourceCoins = sourceCoins.filter(c => c.id !== movedCoinId);
-      const newDestinationCoins = insert(destinationCoins, indexToMove, movedCoin );
+      const newDestinationCoins = insertIntoArrayByIndex(destinationCoins, indexToMove, movedCoin );
       console.log(newDestinationCoins)
 
       setCoinsByBoardId(sourceDroppableId, newSourceCoins);
       setCoinsByBoardId(destinatioDroppableId, newDestinationCoins);
     }
-
   };
 
   return (
@@ -96,48 +82,16 @@ function App() {
         flexDirection: "row",
       }}
     >
-      <DragDropContext onDragEnd={onDragEnd}>
-        <div style={{ display: "flex", flexDirection: "row" }}>
-          <Droppable droppableId={BoardsIds.POSSIBLE_COINS}>
-            {(provided, snapshot) => (
-              <div
-                {...provided.droppableProps}
-                ref={provided.innerRef}
-                style={{
-                  background: snapshot.isDraggingOver ? "lightblue" : "rgba(0,0,0,.12)",
-                  padding: grid,
-                  width: 250,
-                }}
-              >
-                <p style={{ padding: grid }}>Possible Coins</p>
-                {unwatchedCoins.map((item, index) => {
-                  return <CoinCard key={item.id} item={item} index={index} />;
-                })}
-                {provided.placeholder}
-              </div>
-            )}
-          </Droppable>
-          <Droppable droppableId={BoardsIds.WATCH_LIST}>
-            {(provided, snapshot) => (
-              <div
-                {...provided.droppableProps}
-                ref={provided.innerRef}
-                style={{
-                  background: snapshot.isDraggingOver ? "lightblue" : "rgba(0,0,0,.12)",
-                  padding: grid,
-                  width: 250,
-                }}
-              >
-                <p style={{ padding: grid }}>Watchlist</p>
-                {watchedCoins.map((item, index) => {
-                  return <CoinCard key={item.id} item={item} index={index} />;
-                })}
-                {provided.placeholder}
-              </div>
-            )}
-          </Droppable>
-        </div>
-      </DragDropContext>
+      <BoardList 
+        boards={[{
+          boardId: BoardsIds.POSSIBLE_COINS,
+          coins: unwatchedCoins,
+        },{
+          boardId: BoardsIds.WATCH_LIST,
+          coins: watchedCoins,
+        }]}
+        onMoveCoinToList={handleMoveCoinToList}
+      />
       <div style={{ padding: grid }}>
         <p>Charts</p>
       </div>

@@ -10,10 +10,6 @@ interface CoinCardProps {
     index: number;
 }
   
-/**
- * TODO: implement conditional style depending on dragging status
- * @see https://react-beautiful-dnd.netlify.app/?path=/story/board--simple
- */
 const CoinCard = ({ item, index }: CoinCardProps) => {
     return (
         <Draggable key={item.id} draggableId={item.id} index={index}>
