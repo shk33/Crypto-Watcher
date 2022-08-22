@@ -1,8 +1,8 @@
 import React from "react";
 import { Coin } from "./entities/Coin"
 import { BoardsIds } from "./entities/CoinBoard"
-import { insertIntoArrayByIndex } from "helpers/Commons";
-import BoardList from "components/BoardList";
+import { insertIntoArrayByIndex, moveItemInArrayToIndex } from "helpers/Commons";
+import BoardList, { SwapCoinsInput } from "components/BoardList";
 
 const grid = 8;
  
@@ -73,6 +73,16 @@ function App() {
     }
   };
 
+  const handleSwapCoins = (result: SwapCoinsInput) => {
+    const allCoins = getCoinsByBoardId(result.boardId);
+    const movedCoin = allCoins.find(c => c.id === result.coinId);
+
+    if(movedCoin){
+      const newCoins = moveItemInArrayToIndex(allCoins, result.oldIndex, result.newIndex);
+      setCoinsByBoardId(result.boardId, newCoins);
+    }
+  };
+
   return (
     <div
       className="App"
@@ -91,6 +101,7 @@ function App() {
           coins: watchedCoins,
         }]}
         onMoveCoinToList={handleMoveCoinToList}
+        onSwapCoinInList={handleSwapCoins}
       />
       <div style={{ padding: grid }}>
         <p>Charts</p>
