@@ -17,7 +17,7 @@ const CoinBoard = ({ droppableId, coins }: CoinBoardProps) => {
                 {...provided.droppableProps}
                 ref={provided.innerRef}
                 style={{
-                    background: snapshot.isDraggingOver ? "lightblue" : "rgba(0,0,0,.12)",
+                    background: snapshot.isDraggingOver ? "aquamarine" : "white",
                     padding: grid,
                     width: 250,
                 }}
