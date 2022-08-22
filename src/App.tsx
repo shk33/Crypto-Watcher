@@ -1,15 +1,50 @@
 import React from "react";
-import { Coin } from "./entities/Coin"
+import { Coin, CoinChartData } from "./entities/Coin"
 import { BoardsIds } from "./entities/CoinBoard"
 import { insertIntoArrayByIndex, moveItemInArrayToIndex } from "helpers/Commons";
 import BoardList, { SwapCoinsInput } from "components/BoardList";
 
 const grid = 8;
+
+const getCoinChartData = async (coinId:string): Promise<CoinChartData> => {
+  const resp = await fetch(
+    `https://api.coinstats.app/public/v1/charts?period=1y&coinId=${coinId}`
+  );
+  const data = await resp.json();
+  console.log(data);
+  
+  return {
+    coinId,
+    id: coinId,
+    options: {
+      title: coinId,
+      hAxis: {
+        title: "Day", 
+        titleTextStyle: { color: "#444" }
+      },
+      vAxis: { minValue: 0 },
+      chartArea: {
+        width: "50%",
+        height: "75%"
+      },
+    },
+    series: [
+      ["Year", "Price"],
+      ...data.chart.map( (d:any) => {
+        return [
+          new Date(d[0]  * 1000).toLocaleDateString('en-US'),
+          d[1]
+        ]
+      })
+    ]
+  };
+};
  
 function App() {
   const [coins, setCoins] = React.useState<Coin[]>([]);
   const [unwatchedCoins, setUnwatchedCoins] = React.useState<Coin[]>([]);
   const [watchedCoins, setWatchedCoins] = React.useState<Coin[]>([]);
+  const [chartsData, /* setChartsData */] = React.useState<CoinChartData[]>([]);
 
   React.useEffect(() => {
     const promise = async () => {
@@ -18,7 +53,6 @@ function App() {
       );
       const data = await resp.json();
       setCoins(data.coins);
-      console.log(data);
     };
     promise();
   }, []);
@@ -26,6 +60,17 @@ function App() {
   React.useEffect(() => {
     setUnwatchedCoins(coins);
   }, [coins]);
+
+  React.useEffect(() => {
+    const watchedCoinIds = watchedCoins.map(c => c.id);
+    const chartsCoinIds = chartsData.map(c => c.coinId);
+
+    const newIds = watchedCoinIds.filter(x => !chartsCoinIds.includes(x));
+    const newId = newIds[0];
+    getCoinChartData(newId)
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [watchedCoins]);
 
   const getCoinsByBoardId = (board: BoardsIds) => {
     switch (board) {
