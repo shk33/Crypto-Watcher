@@ -13,7 +13,7 @@ interface CoinCardProps {
 const CoinCard = ({ item, index }: CoinCardProps) => {
     return (
         <Draggable key={item.id} draggableId={item.id} index={index}>
-        {(provided) => {
+        {(provided, snapshot) => {
             return (
             <div
                 ref={provided.innerRef}
@@ -26,24 +26,29 @@ const CoinCard = ({ item, index }: CoinCardProps) => {
                 ...provided.draggableProps.style,
                 }}
             >
-                <Card variant="outlined">
-                <CardContent>
-                    <div>
-                    <div
-                        style={{
-                        display: "flex",
-                        flex: 1,
-                        flexDirection: "row",
-                        justifyContent: "flex-start",
-                        alignItems: "center",
-                        }}
-                    >
-                        <img src={item.icon} style={{ height: 24, width: 24 }} />
-                        <p style={{ paddingLeft: 16 }}>{item.name}</p>
-                    </div>
-                    <p>{item.symbol}</p>
-                    </div>
-                </CardContent>
+                <Card 
+                    variant="outlined" raised={snapshot.isDragging}
+                    sx={{
+                        background: snapshot.isDragging ? "#FF7F50" : "white",
+                    }}
+                >
+                    <CardContent>
+                        <div>
+                            <div
+                                style={{
+                                display: "flex",
+                                flex: 1,
+                                flexDirection: "row",
+                                justifyContent: "flex-start",
+                                alignItems: "center",
+                                }}
+                            >
+                                <img alt={item.name} src={item.icon} style={{ height: 24, width: 24 }} />
+                                <p style={{ paddingLeft: 16 }}>{item.name}</p>
+                            </div>
+                            <p>{item.symbol}</p>
+                        </div>
+                    </CardContent>
                 </Card>
             </div>
             );
