@@ -8,7 +8,8 @@ const grid = 8;
 function App() {
   const [coins, setCoins] = React.useState<Coin[]>([]);
   const [unwatchedCoins, setUnwatchedCoins] = React.useState<Coin[]>([]);
-  const [watchedCoins] = React.useState<Coin[]>([]);
+  const [watchedCoins, setWatchedCoins] = React.useState<Coin[]>([]);
+
   React.useEffect(() => {
     const promise = async () => {
       const resp = await fetch(
@@ -20,15 +21,56 @@ function App() {
     };
     promise();
   }, []);
+
   React.useEffect(() => {
     setUnwatchedCoins(coins);
   }, [coins]);
-  /**
-   * TODO
-   * - implement cross-column drag and drop (remove / insert)
-   * - implement intra-column drag and drop (reorder)
-   */
-  const onDragEnd = () => {};
+
+   const insert = (arr:Array<any>, index: number, newItem:any) => [
+    // part of the array before the specified index
+    ...arr.slice(0, index),
+    // inserted item
+    newItem,
+    // part of the array after the specified index
+    ...arr.slice(index)
+  ];
+
+   const onDragEnd = (result:any) => {
+    if (!result.destination) {
+      return;
+    }
+    console.log(result)
+    const { droppableId, index: indexToDrop } = result.destination;
+
+    if(droppableId === "watchList"){ 
+      const draggableId = result.draggableId;
+      const movedCoin = coins.find(c => c.id === draggableId);
+
+      if(movedCoin){
+        const newUnwatchedCoins = unwatchedCoins.filter(c => c.id !== draggableId);
+        const newWatchedCoins = insert(watchedCoins, indexToDrop, movedCoin );
+
+        setUnwatchedCoins(newUnwatchedCoins);
+        setWatchedCoins(newWatchedCoins);
+      }
+
+    }
+
+    if(droppableId === "possibleCoins"){ 
+      const draggableId = result.draggableId;
+      const movedCoin = coins.find(c => c.id === draggableId);
+
+      if(movedCoin){
+        const newWatchedCoins = watchedCoins.filter(c => c.id !== draggableId);
+        const newUnwatchedCoins = insert(unwatchedCoins, indexToDrop, movedCoin );
+
+        setUnwatchedCoins(newUnwatchedCoins);
+        setWatchedCoins(newWatchedCoins);
+      }
+
+    }
+  };
+
   return (
     <div
       className="App"
@@ -56,7 +98,7 @@ function App() {
               >
                 <p style={{ padding: grid }}>Possible Coins</p>
                 {unwatchedCoins.map((item, index) => {
-                  return <CoinCard item={item} index={index} />;
+                  return <CoinCard key={item.id} item={item} index={index} />;
                 })}
                 {provided.placeholder}
               </div>
@@ -78,7 +120,7 @@ function App() {
               >
                 <p style={{ padding: grid }}>Watchlist</p>
                 {watchedCoins.map((item, index) => {
-                  return <CoinCard item={item} index={index} />;
+                  return <CoinCard key={item.id} item={item} index={index} />;
                 })}
                 {provided.placeholder}
               </div>
