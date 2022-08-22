@@ -9,7 +9,6 @@ export const insertIntoArrayByIndex = (arr:Array<any>, index: number, newItem:an
 
 
 export const moveItemInArrayToIndex = (array:Array<any>, fromIndex:number, toIndex:number) => {
-    console.log({fromIndex, toIndex})
     if (fromIndex === toIndex) return array;
 
     const item = array[fromIndex];
