@@ -19,6 +19,7 @@ interface BoardListProps {
 interface SingleBoardList {
     boardId: BoardsIds;
     coins: Coin[];
+    name: string;
 }
   
 const BoardList = ({ boards, onMoveCoinToList, onSwapCoinInList }: BoardListProps) => {
@@ -48,7 +49,7 @@ const BoardList = ({ boards, onMoveCoinToList, onSwapCoinInList }: BoardListProp
         <DragDropContext onDragEnd={onDragEnd}>
         <div style={{ display: "flex", flexDirection: "row" }}>
             {boards.map(board => {
-                return <CoinBoard key={board.boardId} droppableId={board.boardId} coins={board.coins}/>
+                return <CoinBoard name={board.name} key={board.boardId} droppableId={board.boardId} coins={board.coins}/>
             })}
         </div>
       </DragDropContext>

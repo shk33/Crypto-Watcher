@@ -3,6 +3,7 @@ import { Coin, CoinChartData } from "./entities/Coin"
 import { BoardsIds } from "./entities/CoinBoard"
 import { insertIntoArrayByIndex, moveItemInArrayToIndex } from "helpers/Commons";
 import BoardList, { SwapCoinsInput } from "components/BoardList";
+import ChartList from "components/ChartList";
 
 const grid = 8;
 
@@ -44,8 +45,9 @@ function App() {
   const [coins, setCoins] = React.useState<Coin[]>([]);
   const [unwatchedCoins, setUnwatchedCoins] = React.useState<Coin[]>([]);
   const [watchedCoins, setWatchedCoins] = React.useState<Coin[]>([]);
-  const [chartsData, /* setChartsData */] = React.useState<CoinChartData[]>([]);
+  const [chartsData, setChartsData] = React.useState<CoinChartData[]>([]);
 
+  // Get Possible Coins on Mount
   React.useEffect(() => {
     const promise = async () => {
       const resp = await fetch(
@@ -57,17 +59,34 @@ function App() {
     promise();
   }, []);
 
+  // Add all Coins to Possible Coins after Coins has been hydrated
   React.useEffect(() => {
     setUnwatchedCoins(coins);
   }, [coins]);
 
+  // Add or Delete charts after watched coins has changed
   React.useEffect(() => {
     const watchedCoinIds = watchedCoins.map(c => c.id);
     const chartsCoinIds = chartsData.map(c => c.coinId);
 
     const newIds = watchedCoinIds.filter(x => !chartsCoinIds.includes(x));
     const newId = newIds[0];
-    getCoinChartData(newId)
+
+    if(newId){
+      const fetchData = async () => {
+        const result = await getCoinChartData(newId);
+  
+        setChartsData([...chartsData, result]);
+      };
+  
+      fetchData()
+    }
+
+    const removeIds = chartsCoinIds.filter(x => !watchedCoinIds.includes(x));
+    if(removeIds.length > 0){
+      setChartsData([...chartsData.filter(c => !removeIds.includes(c.coinId))]);
+    }
+
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [watchedCoins]);
@@ -98,7 +117,7 @@ function App() {
     if (!result.destination) {
       return;
     }
-    console.log(result)
+
     const { droppableId: destinatioDroppableId, index: indexToMove } = result.destination;
     const { droppableId: sourceDroppableId } = result.source;
 
@@ -141,15 +160,18 @@ function App() {
         boards={[{
           boardId: BoardsIds.POSSIBLE_COINS,
           coins: unwatchedCoins,
+          name: "Possible Coins",
         },{
           boardId: BoardsIds.WATCH_LIST,
           coins: watchedCoins,
+          name: "Watch List"
         }]}
         onMoveCoinToList={handleMoveCoinToList}
         onSwapCoinInList={handleSwapCoins}
       />
       <div style={{ padding: grid }}>
         <p>Charts</p>
+        <ChartList coinChartsData={chartsData} />
       </div>
     </div>
   );

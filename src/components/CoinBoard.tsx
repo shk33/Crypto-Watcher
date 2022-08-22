@@ -7,9 +7,10 @@ const grid = 8;
 interface CoinBoardProps {
     droppableId: string;
     coins: Coin[];
+    name: string;
 }
   
-const CoinBoard = ({ droppableId, coins }: CoinBoardProps) => {
+const CoinBoard = ({ droppableId, coins, name }: CoinBoardProps) => {
     return (
         <Droppable droppableId={droppableId}>
             {(provided, snapshot) => (
@@ -22,7 +23,7 @@ const CoinBoard = ({ droppableId, coins }: CoinBoardProps) => {
                     width: 250,
                 }}
                 >
-                <p style={{ padding: grid }}>Possible Coins</p>
+                <p style={{ padding: grid }}>{ name }</p>
                 {coins.map((item, index) => {
                     return <CoinCard key={item.id} item={item} index={index} />;
                 })}
