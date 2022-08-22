@@ -5,6 +5,11 @@ import CoinCard from "components/CoinCard";
 
 const grid = 8;
 
+enum BoardsIds {
+  POSSIBLE_COINS = "possibleCoins",
+  WATCH_LIST = "watchList",
+}
+ 
 function App() {
   const [coins, setCoins] = React.useState<Coin[]>([]);
   const [unwatchedCoins, setUnwatchedCoins] = React.useState<Coin[]>([]);
@@ -26,7 +31,7 @@ function App() {
     setUnwatchedCoins(coins);
   }, [coins]);
 
-   const insert = (arr:Array<any>, index: number, newItem:any) => [
+  const insert = (arr:Array<any>, index: number, newItem:any) => [
     // part of the array before the specified index
     ...arr.slice(0, index),
     // inserted item
@@ -35,40 +40,51 @@ function App() {
     ...arr.slice(index)
   ];
 
+  const getCoinsByBoardId = (board: BoardsIds) => {
+    switch (board) {
+      case BoardsIds.POSSIBLE_COINS:
+        return unwatchedCoins;
+      case BoardsIds.WATCH_LIST:
+        return watchedCoins;
+      default:
+        return []
+    }
+  }
+
+  const setCoinsByBoardId = (board: BoardsIds, newCoins: Coin[]) => {
+    switch (board) {
+      case BoardsIds.POSSIBLE_COINS:
+        setUnwatchedCoins(newCoins);
+        break;
+      case BoardsIds.WATCH_LIST:
+        setWatchedCoins(newCoins);
+        break;
+    }
+  }
+
    const onDragEnd = (result:any) => {
     if (!result.destination) {
       return;
     }
     console.log(result)
-    const { droppableId, index: indexToDrop } = result.destination;
+    const { droppableId: destinatioDroppableId, index: indexToMove } = result.destination;
+    const { droppableId: sourceDroppableId } = result.source;
 
-    if(droppableId === "watchList"){ 
-      const draggableId = result.draggableId;
-      const movedCoin = coins.find(c => c.id === draggableId);
+    const destinationCoins = getCoinsByBoardId(destinatioDroppableId);
+    const sourceCoins = getCoinsByBoardId(sourceDroppableId);
+    
+    const movedCoinId = result.draggableId;
+    const movedCoin = sourceCoins.find(c => c.id === movedCoinId);
 
-      if(movedCoin){
-        const newUnwatchedCoins = unwatchedCoins.filter(c => c.id !== draggableId);
-        const newWatchedCoins = insert(watchedCoins, indexToDrop, movedCoin );
+    if(movedCoin){
+      const newSourceCoins = sourceCoins.filter(c => c.id !== movedCoinId);
+      const newDestinationCoins = insert(destinationCoins, indexToMove, movedCoin );
+      console.log(newDestinationCoins)
 
-        setUnwatchedCoins(newUnwatchedCoins);
-        setWatchedCoins(newWatchedCoins);
-      }
-
+      setCoinsByBoardId(sourceDroppableId, newSourceCoins);
+      setCoinsByBoardId(destinatioDroppableId, newDestinationCoins);
     }
 
-    if(droppableId === "possibleCoins"){ 
-      const draggableId = result.draggableId;
-      const movedCoin = coins.find(c => c.id === draggableId);
-
-      if(movedCoin){
-        const newWatchedCoins = watchedCoins.filter(c => c.id !== draggableId);
-        const newUnwatchedCoins = insert(unwatchedCoins, indexToDrop, movedCoin );
-
-        setUnwatchedCoins(newUnwatchedCoins);
-        setWatchedCoins(newWatchedCoins);
-      }
-
-    }
   };
 
   return (
@@ -82,16 +98,13 @@ function App() {
     >
       <DragDropContext onDragEnd={onDragEnd}>
         <div style={{ display: "flex", flexDirection: "row" }}>
-          <Droppable droppableId="possibleCoins">
-            {(provided) => (
+          <Droppable droppableId={BoardsIds.POSSIBLE_COINS}>
+            {(provided, snapshot) => (
               <div
                 {...provided.droppableProps}
                 ref={provided.innerRef}
                 style={{
-                  /**
-                   * TODO: implement background colors with style that changes when dragging
-                   * @see https://react-beautiful-dnd.netlify.app/?path=/story/board--simple
-                   */
+                  background: snapshot.isDraggingOver ? "lightblue" : "rgba(0,0,0,.12)",
                   padding: grid,
                   width: 250,
                 }}
@@ -104,16 +117,13 @@ function App() {
               </div>
             )}
           </Droppable>
-          <Droppable droppableId="watchList">
-            {(provided) => (
+          <Droppable droppableId={BoardsIds.WATCH_LIST}>
+            {(provided, snapshot) => (
               <div
                 {...provided.droppableProps}
                 ref={provided.innerRef}
                 style={{
-                  /**
-                   * TODO: implement background colors with style that changes when dragging
-                   * @see https://react-beautiful-dnd.netlify.app/?path=/story/board--simple
-                   */
+                  background: snapshot.isDraggingOver ? "lightblue" : "rgba(0,0,0,.12)",
                   padding: grid,
                   width: 250,
                 }}
