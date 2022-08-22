@@ -2,16 +2,7 @@ import React from "react";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
-
-interface Coin {
-  id: string;
-  availableSupply: number;
-  icon: string;
-  marketCap: number;
-  price: number;
-  name: string;
-  symbol: string;
-}
+import { Coin } from "./entities/Coin"
 
 const grid = 8;
 
